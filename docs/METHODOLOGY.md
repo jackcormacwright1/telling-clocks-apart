@@ -105,3 +105,89 @@ data. Every start is first rescaled in time to the period seen in the data and g
 
 Models are compared by BIC = SSE + *k* log *n*, where *k* counts the model's parameters, the phase and the
 offsets, and *n* is the number of observations.
+
+## Which experiment tells the models apart?
+
+**The criterion.** Take one model as the truth and compute exactly what it predicts for an experiment (at an
+arbitrary phase, with no noise). Fit each rival to those predictions. The rival's best SSE, **Δ**, is how far the
+closest version of the rival still misses, in units of measurement variance. This is the T-optimality criterion
+of Atkinson and Fedorov (1975). Its meaning is practical: with real noise, the rival's SSE exceeds the truth's by
+about Δ on average (less a little for each extra parameter the rival has). So Δ is the evidence the experiment
+is expected to give against the rival. Below about 2 the two are indistinguishable. Above about 10 (a
+likelihood ratio near 150) the rival is decisively rejected. Repeating an experiment doubles its Δ.
+
+Refitting is the point. Comparing the models at their base parameters says how different those three
+parameter sets are. Δ says what *no* setting of the rival's parameters can mimic.
+
+**Search.** A local minimum would make a rival look worse than it is and overstate Δ, so every fit was run from
+the rival's base parameters, six random starts around them, and the rival's fits to every other experiment.
+A second, independent pass then reran all 42 fits from twelve more widely spread starts
+(`run_design.py --refine`). It improved most fits by less than 0.2. The largest change was the saturation
+model's fit to the delay chain's half-dosage experiment, from 22.7 to 12.7. That is a reminder that each Δ is an
+upper bound, found by search, on the true minimum.
+
+**Results** ([discrimination.csv](../results/discrimination.csv)):
+
+| Truth → rival | Standard | Hourly | + protein | + inhibitor | + half dosage | + both perturbations | Everything |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Switch → saturation | 0.0 | 1.0 | 34 | 4.0 | 2.2 | 250 | 421 |
+| Switch → delay | 18 | 58 | 88 | 74 | 51 | 100 | 230 |
+| Saturation → switch | 56 | 185 | 118 | 1,208 | 334 | 1,240 | 2,012 |
+| Saturation → delay | 35 | 103 | 65 | 2,420 | 396 | 2,391 | 3,981 |
+| Delay → switch | 0.0 | 0.0 | 51 | 94 | 4.4 | 112 | 390 |
+| Delay → saturation | 0.0 | 0.3 | 7.0 | 9.8 | 12.7 | 810 | 861 |
+| **Worst case** | **0.0** | **0.0** | **7.0** | **4.0** | **2.2** | **100** | **230** |
+
+![Discrimination](../results/discrimination.png)
+
+What this shows:
+
+1. **A standard time course cannot tell the models apart**, unless the saturation model happens to be true.
+   If the truth is the delay chain, some version of each rival reproduces its mRNA time course to well within
+   the noise (Δ < 0.01), and the same holds for the saturation model mimicking the switch.
+2. **More of the same data barely helps.** Sampling every hour (four times the effort) leaves Δ at 1 or below in
+   all three hard cases.
+3. **The best single addition depends on which model is true.** If the delay chain is true, the inhibitor series
+   is best (Δ ≥ 9.8, just short of decisive). If the switch is true, the saturation model can mimic the inhibitor
+   series (Δ = 4.0) and half dosage (2.2), and only protein measurements separate them (34). No single addition
+   is decisive whatever the truth. The best worst case is protein, at Δ = 7.
+4. **Two perturbations together are decisive, though either alone can be faked.** Adding both reporter
+   experiments, with no new time courses, gives Δ of at least 100 against every rival. A rival can find
+   parameters that match the inhibitor series, or parameters that match half dosage, but not one set that matches
+   both. For example, the saturation model's best mimic of the switch's inhibitor series predicts that halving
+   transcription shortens the period to 15.8 hours, where the switch says 22.3.
+5. **Comparing models at fixed parameters misleads.** At its base parameters the saturation model predicts that
+   slowing protein removal *shortens* the period, the opposite of the other two
+   ([perturbations.png](../results/perturbations.png)). That looks like a decisive qualitative test. But the
+   version of the saturation model that best fits the switch's standard time course predicts the inhibitor
+   *lengthens* the period, by almost exactly the switch's amounts (26.3, 28.6 and 30.6 hours against 26.1, 28.6
+   and 31.5).
+
+## What does a time course say about the parameters?
+
+Within one model, the Fisher information of the log parameters at the truth says how precisely each
+combination of parameters is determined. It is computed from the Jacobian of the standardised residuals
+(forward differences), with the phase profiled out by a Schur complement and the offsets already profiled out of
+the residuals. Each eigenvalue λ corresponds to a combination of log parameters (its eigenvector) determined to a
+standard deviation of 1/√λ. A combination with sd below 0.1 is determined to within about 10%.
+
+![Sloppiness](../results/sloppiness.png)
+
+| Combinations determined to 10% | Standard | Hourly | + protein | + inhibitor | + half dosage | + both | Everything |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Steep switch (5 parameters) | 2 | 3 | 2 | 3 | 2 | 3 | 3 |
+| Saturating removal (7) | 2 | 3 | 2 | 3 | 3 | 4 | 5 |
+| Long delay chain (4) | 2 | 3 | 2 | 2 | 2 | 2 | 3 |
+
+All three models are **sloppy** in the sense of Gutenkunst et al. (2007): the eigenvalues spread over three to
+eight orders of magnitude. A standard time course pins down two combinations in each model, whatever its number
+of parameters. The best-determined is always the overall speed of the clock (every rate moving together, which
+sets the period). In the switch, two combinations are not determined at all (sd 54 and 220 on the log scale):
+one is the gain, with the Hill coefficient, because far above the threshold for oscillation the switch is simply
+on or off; the other is the ratio of the two protein removal rates, because mRNA data cannot say which of the two
+protein stages is the slow one. Hourly sampling resolves both (sd 0.36 and 0.73). Even with every experiment, two
+of the switch's five combinations and two of the saturation model's seven stay above 10%.
+
+This is why the design question had to be asked by refitting rivals rather than by perturbing parameters: in
+directions the data do not determine, a model can wander far from its base parameters, and its predictions for
+an untested experiment wander with it.

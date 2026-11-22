@@ -97,19 +97,22 @@ def discrimination_figure():
         x = np.arange(len(designs))
         for j, rival in enumerate(rivals):
             vals = g.set_index(["rival", "design"])["delta"].reindex([(rival, k) for k in designs]).to_numpy()
-            ax.bar(x + (j - 0.5) * 0.38, np.maximum(vals, 1e-2), width=0.36, color=COLOURS[rival],
-                   label=f"rival: {NAMES[rival]}")
+            pos = x + (j - 0.5) * 0.38
+            ax.bar(pos, np.maximum(vals, 1e-2), width=0.36, color=COLOURS[rival], label=f"rival: {NAMES[rival]}")
+            for p_, v in zip(pos, vals):
+                if v < 0.015:
+                    ax.text(p_, 0.013, "0", ha="center", va="bottom", fontsize=8, color=MUTED)
         ax.axhline(10, color=INK, lw=1, ls="--")
         ax.axhline(2, color=MUTED, lw=1, ls=":")
         ax.set_yscale("log")
-        ax.set_ylim(1e-2, None)
+        ax.set_ylim(1e-2, 1e5)
         ax.set_xticks(x, [DESIGN_NAMES[k].replace("Add ", "+ ").replace(" time course", "") for k in designs],
                       rotation=35, ha="right")
         ax.set_title(f"Truth: {NAMES[truth]}")
         ax.legend(fontsize=8, loc="upper left")
     axes[0].set_ylabel("Δ: evidence against the rival")
-    fig.suptitle("How well can the closest version of each rival mimic the truth?  (dashed: decisive, Δ = 10)",
-                 x=0.01, ha="left", y=1.03)
+    fig.suptitle("How well can the closest version of each rival mimic the truth?  "
+                 "(dashed: decisive, Δ = 10; dotted: indistinguishable, Δ = 2)", x=0.01, ha="left", y=1.03)
     save(fig, "discrimination.png")
 
 

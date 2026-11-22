@@ -115,20 +115,22 @@ st.markdown('<p class="lede">Three textbook explanations of how one gene keeps 2
             "course really say about the parameters inside a model?</p>", unsafe_allow_html=True)
 
 if disc is not None:
-    std = disc[disc["design"] == "standard"].groupby("truth")["delta"].min()
-    inh = disc[disc["design"] == "inhibitor"].groupby("truth")["delta"].min()
-    dose = disc[disc["design"] == "dosage"].groupby("truth")["delta"].min()
+    worst = disc.groupby("design")["delta"].min()
+    singles = worst[["protein", "inhibitor", "dosage"]]
+    best_single = singles.idxmax()
     cols = st.columns(4)
     cards = [
         kpi("Rival models", "3", "A steep switch, saturating removal and a long delay chain: the three standard "
             "ways a negative-feedback loop can oscillate."),
-        kpi("Evidence from a standard time course", f"Δ ≤ {std.max():.1f}",
-            "mRNA every 4 hours for two days. Some version of a rival mimics the truth almost perfectly "
-            "(Δ under 2 is indistinguishable)."),
-        kpi("Evidence from adding an inhibitor series", f"Δ ≥ {inh.min():,.0f}",
-            "Three doses of a drug that slows protein removal: decisive whichever model is true (Δ above 10)."),
-        kpi("Evidence from adding half dosage", f"Δ ≥ {dose.min():,.1f}",
-            "A heterozygous knockout. Much less informative than the inhibitor, for at least one truth."),
+        kpi("Standard time course, worst case", f"Δ = {worst['standard']:.1f}",
+            "mRNA every 4 hours for two days. If the delay chain is true, both rivals can be tuned to mimic it "
+            "exactly. Hourly sampling barely helps."),
+        kpi("Best single extra experiment, worst case", f"Δ = {singles.max():.0f}",
+            f"{DESIGN_NAMES[best_single].replace('Add ', 'Adding ')}. Below 10, not decisive: whichever single "
+            "experiment is added, some truth leaves a rival able to fake it."),
+        kpi("Both perturbations together, worst case", f"Δ = {worst['both']:.0f}",
+            "An inhibitor series and half dosage, no new time courses. Each alone can be faked; together they "
+            "rule out every rival whichever model is true."),
     ]
     for c, card in zip(cols, cards):
         c.markdown(card, unsafe_allow_html=True)
@@ -193,9 +195,10 @@ with tabs[0]:
                              tooltip=["model", alt.Tooltip("slowed:Q", format=".0f"),
                                       alt.Tooltip("amplitude:Q", format=".2f")]).properties(height=240),
                     use_container_width=True)
-    note("Slowing protein removal, as a CK1 inhibitor does, lengthens the period of the two linear models and "
-         "shortens the saturating one. These are the base parameter sets; refitting each model shows how much "
-         "of that difference survives (Which experiment?).")
+    note("At these base parameters, slowing protein removal (as a CK1 inhibitor does) lengthens the period of "
+         "the two linear models and shortens the saturating one. It looks like a decisive test, but it is not: "
+         "re-tuned to the switch's time course, the saturating model lengthens its period by almost exactly the "
+         "switch's amounts. Which experiment? refits every rival to find what really separates them.")
 
 # ---------------------------------------------------------------- explore
 with tabs[1]:
