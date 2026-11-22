@@ -191,3 +191,39 @@ of the switch's five combinations and two of the saturation model's seven stay a
 This is why the design question had to be asked by refitting rivals rather than by perturbing parameters: in
 directions the data do not determine, a model can wander far from its base parameters, and its predictions for
 an untested experiment wander with it.
+
+## With noise: a simulation study
+
+Δ is an expectation. To see what happens with real noise, `run_simulation.py` generated 20 noisy data sets for
+each model as the truth and each experiment, with the noise levels above and the clock at a random phase at
+the first sample, and fitted all three models to each (420 data sets, 1,260 fits). Each fit started from the
+model's best fit to the truth's noise-free data (for the true model, its own parameters) and from its base
+parameters. Starting rivals at their best mimic of the truth, if anything, helps them, so it cannot make the
+truth look better than it is.
+
+Two measures, because they answer different questions:
+
+* **Decisive**: the truth fits better than both rivals by at least 10 in SSE, so the data themselves rule the
+  rivals out.
+* **BIC picks the truth.** BIC adds a penalty of log *n* per parameter, so when the three fit equally it picks
+  the one with fewest parameters: the delay chain (4), then the switch (5), then saturation (7).
+
+![Simulation](../results/identification.png)
+
+| Decisive (% of 20) | Standard | Hourly | + protein | + inhibitor | + half dosage | + both | Everything |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Truth: steep switch | 0 | 0 | 95 | 0 | 5 | 100 | 100 |
+| Truth: saturating removal | 95 | 100 | 100 | 100 | 100 | 100 | 100 |
+| Truth: long delay chain | 0 | 0 | 30 | 10 | 5 | 100 | 100 |
+
+The noisy experiments behave as Δ predicts. With the standard or hourly time course the data never rule out the
+rivals unless saturation is true. Protein measurements are decisive 95% of the time if the switch is true but
+only 30% if the delay chain is. Either perturbation alone rarely is. Both together always are. In no data set
+did a rival beat the truth by 10 or more, which would have meant the truth's fit had failed.
+
+BIC, meanwhile, picks the right model in 75 to 100% of data sets under *every* experiment, including the
+standard time course. That is the Occam penalty doing the work. When the delay chain is true and the data
+cannot distinguish the models, BIC picks it because it has the fewest parameters, and the same logic favours
+the switch over saturation. Those are correct guesses for the wrong reason. Had the truth been the model with
+more parameters, the same indistinguishable data would have pointed to the wrong one. Being right about which
+model is simplest is not evidence about which mechanism the clock uses.
