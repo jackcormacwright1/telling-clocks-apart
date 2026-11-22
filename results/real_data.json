@@ -112,110 +112,188 @@
  },
  "models": {
   "switch": {
-   "sse": 47.98146846348721,
-   "bic": 75.07987553984245,
+   "sse": 48.100126729251734,
+   "bic": 75.19853380560697,
    "k": 7,
-   "posterior": 0.06851594823954399,
-   "period": 23.5390076483598,
+   "posterior": 0.06547931219544366,
+   "period": 23.540766716798615,
    "params": {
-    "r_mrna": 0.5035897160411618,
-    "r_protein": 0.08177312862078533,
-    "r_repressor": 0.05905438539540798,
-    "hill": 22.920440731724455,
-    "gain": 12.06650255019038
+    "r_mrna": 0.48387202752745406,
+    "r_protein": 0.07398333664717499,
+    "r_repressor": 0.0716362103982451,
+    "hill": 21.14455455089714,
+    "gain": 12.440056170283937
    },
-   "amplitude": 2.2953520258305096,
-   "acceptance": 0.05685,
+   "amplitude": 2.2943686771281344,
+   "sampling": {
+    "chains": 2,
+    "draws": 600,
+    "acceptance": 0.2575,
+    "rhat_max": 5.250183094296059,
+    "ess_min": 9.314217674914486,
+    "ess_inhibitor": 40.54964470911309
+   },
    "predictions": {
     "protein removal x0.9": {
-     "stops": 0.5666666666666667,
-     "period_change_median": 0.9723167423875552,
+     "stops": 0.0,
+     "period_change_median": 1.0069294305495404,
      "period_change_90": [
-      0.5433279223077967,
-      1.4917279259500327
+      0.8638823598284795,
+      1.1386218464348181
      ],
-     "lengthens": 0.43333333333333335,
-     "amplitude_ratio_median": 0.6652502198315338
+     "lengthens": 1.0,
+     "amplitude_ratio_median": 0.6728683311533398
     },
     "protein removal x0.8": {
-     "stops": 0.8666666666666667,
-     "period_change_median": 2.6395264044944966,
+     "stops": 0.81,
+     "period_change_median": 2.1804470764842634,
      "period_change_90": [
-      2.356649379154722,
-      3.468534068525212
+      1.905993324355199,
+      2.378050196223697
      ],
-     "lengthens": 0.13333333333333333,
-     "amplitude_ratio_median": 0.6115118227755372
+     "lengthens": 0.19,
+     "amplitude_ratio_median": 0.19270414699038005
     },
     "protein removal x0.7": {
-     "stops": 0.9566666666666667,
-     "period_change_median": 4.8893107076529105,
+     "stops": 1.0,
+     "period_change_median": NaN,
      "period_change_90": [
-      4.5641733720581215,
-      5.507441484951744
+      NaN,
+      NaN
      ],
-     "lengthens": 0.043333333333333335,
-     "amplitude_ratio_median": 0.7410147776042704
+     "lengthens": 0.0,
+     "amplitude_ratio_median": NaN
     },
     "transcription x0.5": {
-     "stops": 0.25,
-     "period_change_median": -0.13612644264073026,
+     "stops": 0.4866666666666667,
+     "period_change_median": -0.6732957741617227,
      "period_change_90": [
-      -0.6242280312182971,
-      -0.0038270522661264313
+      -0.8672907311055503,
+      -0.5553859078648451
      ],
-     "lengthens": 0.0033333333333333335,
-     "amplitude_ratio_median": 0.9213909976696163
+     "lengthens": 0.0,
+     "amplitude_ratio_median": 0.3476570528964502
     }
    }
   },
   "saturation": {
-   "sse": 45.59871009189386,
-   "bic": 80.43951919006489,
+   "sse": 47.35795898350135,
+   "bic": 82.19876808167237,
    "k": 9,
-   "posterior": 0.004698506602490067,
-   "period": 23.675330929805952,
+   "posterior": 0.001977072292672091,
+   "period": 23.462045675985735,
    "params": {
-    "v": 0.15236546421840025,
-    "hill": 3.6889938139215834,
-    "k": 0.859360032420129,
-    "V_mrna": 0.27286371332770254,
-    "V_protein": 0.057660826352563074,
-    "V_repressor": 0.3106305325451058,
-    "Km": 0.11709389032976456
+    "v": 0.47863382660980497,
+    "hill": 2.9940242162878277,
+    "k": 0.7768261781960851,
+    "V_mrna": 0.3249307346370444,
+    "V_protein": 0.1892125135351855,
+    "V_repressor": 0.35103286484419377,
+    "Km": 0.40883495967175626
    },
-   "amplitude": 2.222734867740947,
-   "acceptance": 0.05015,
+   "amplitude": 2.287103023851678,
+   "sampling": {
+    "chains": 2,
+    "draws": 600,
+    "acceptance": 0.2675,
+    "rhat_max": 3.485491322282033,
+    "ess_min": 6.343298367535748,
+    "ess_inhibitor": 600.0
+   },
    "predictions": {
     "protein removal x0.9": {
-     "stops": 0.043333333333333335,
-     "period_change_median": 1.7197015599854524,
+     "stops": 0.26,
+     "period_change_median": -1.1366195638458763,
      "period_change_90": [
-      -0.44349284560753965,
-      2.2771938096849618
+      -1.615063694907068,
+      -0.6611347424729267
      ],
-     "lengthens": 0.8633333333333333,
-     "amplitude_ratio_median": 1.0679454319193085
+     "lengthens": 0.0,
+     "amplitude_ratio_median": 0.482442420975041
     },
     "protein removal x0.8": {
-     "stops": 0.21333333333333335,
-     "period_change_median": 4.037173252809353,
+     "stops": 0.9983333333333333,
+     "period_change_median": -1.6379235024884338,
      "period_change_90": [
-      0.48678539163409695,
-      5.393569740732893
+      -1.6379235024884338,
+      -1.6379235024884338
      ],
-     "lengthens": 0.7566666666666667,
-     "amplitude_ratio_median": 1.164583471880789
+     "lengthens": 0.0,
+     "amplitude_ratio_median": 0.3030037690309366
     },
     "protein removal x0.7": {
-     "stops": 0.38666666666666666,
-     "period_change_median": 7.075802761886649,
+     "stops": 1.0,
+     "period_change_median": NaN,
      "period_change_90": [
-      2.474397942167461,
-      9.385536358629077
+      NaN,
+      NaN
      ],
-     "lengthens": 0.6133333333333333,
-     "amplitude_ratio_median": 1.2293028663651329
+     "lengthens": 0.0,
+     "amplitude_ratio_median": NaN
+    },
+    "transcription x0.5": {
+     "stops": 0.77,
+     "period_change_median": -3.6460258713095257,
+     "period_change_90": [
+      -4.015456506801691,
+      -3.2771747452132276
+     ],
+     "lengthens": 0.0,
+     "amplitude_ratio_median": 0.3146570357507015
+    }
+   }
+  },
+  "delay": {
+   "sse": 46.65896439079251,
+   "bic": 69.88617045623985,
+   "k": 6,
+   "posterior": 0.9325436155118842,
+   "period": 23.570961439565494,
+   "params": {
+    "r_mrna": 1.8497082838882466,
+    "r_protein": 0.4935271590282898,
+    "hill": 3.1187774148108716,
+    "gain": 6.934753228004868
+   },
+   "amplitude": 2.267339355143128,
+   "sampling": {
+    "chains": 2,
+    "draws": 600,
+    "acceptance": 0.22,
+    "rhat_max": 8.57763754013184,
+    "ess_min": 6.698188101212185,
+    "ess_inhibitor": 28.410972803771188
+   },
+   "predictions": {
+    "protein removal x0.9": {
+     "stops": 0.0,
+     "period_change_median": 2.9611781056128237,
+     "period_change_90": [
+      2.7979173245812077,
+      3.1458114776273995
+     ],
+     "lengthens": 1.0,
+     "amplitude_ratio_median": 1.6545615989404143
+    },
+    "protein removal x0.8": {
+     "stops": 0.0,
+     "period_change_median": 6.778278951240928,
+     "period_change_90": [
+      6.42632074180655,
+      7.232516490151419
+     ],
+     "lengthens": 1.0,
+     "amplitude_ratio_median": 2.217662746035811
+    },
+    "protein removal x0.7": {
+     "stops": 0.0,
+     "period_change_median": 11.720122617620326,
+     "period_change_90": [
+      11.12597640738674,
+      12.562939779399453
+     ],
+     "lengthens": 1.0,
+     "amplitude_ratio_median": 2.7187034204385347
     },
     "transcription x0.5": {
      "stops": 1.0,
@@ -226,63 +304,6 @@
      ],
      "lengthens": 0.0,
      "amplitude_ratio_median": NaN
-    }
-   }
-  },
-  "delay": {
-   "sse": 46.64335816090413,
-   "bic": 69.87056422635148,
-   "k": 6,
-   "posterior": 0.9267855451579659,
-   "period": 23.552005088482943,
-   "params": {
-    "r_mrna": 2.152664800404,
-    "r_protein": 0.4903575039724729,
-    "hill": 3.054083251404226,
-    "gain": 7.879957528367667
-   },
-   "amplitude": 2.270360014141076,
-   "acceptance": 0.0662,
-   "predictions": {
-    "protein removal x0.9": {
-     "stops": 0.0,
-     "period_change_median": 2.7831578576890266,
-     "period_change_90": [
-      2.435490323708501,
-      3.1175310393580475
-     ],
-     "lengthens": 1.0,
-     "amplitude_ratio_median": 1.5144931580302374
-    },
-    "protein removal x0.8": {
-     "stops": 0.0,
-     "period_change_median": 6.359556135835945,
-     "period_change_90": [
-      5.391965488647111,
-      7.286602448790674
-     ],
-     "lengthens": 1.0,
-     "amplitude_ratio_median": 1.95514185422265
-    },
-    "protein removal x0.7": {
-     "stops": 0.0,
-     "period_change_median": 10.92276396469854,
-     "period_change_90": [
-      9.12056150943943,
-      12.957333654416521
-     ],
-     "lengthens": 1.0,
-     "amplitude_ratio_median": 2.32556372605954
-    },
-    "transcription x0.5": {
-     "stops": 0.6466666666666666,
-     "period_change_median": -0.30721266567214656,
-     "period_change_90": [
-      -0.4795510009251096,
-      -0.11073810671335238
-     ],
-     "lengthens": 0.0,
-     "amplitude_ratio_median": 0.48738512073481305
     }
    }
   }

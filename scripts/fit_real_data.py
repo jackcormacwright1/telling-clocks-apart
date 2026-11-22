@@ -25,6 +25,7 @@ import json
 import re
 import sys
 import time
+from multiprocessing import Pool
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +34,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from clocks.ensemble import effective_size, predict_rhythms, sample  # noqa: E402
+from clocks.ensemble import effective_size, predict_rhythms, sample, split_rhat  # noqa: E402
 from clocks.experiments import PERTURBATIONS, Data, Design, TimeCourse  # noqa: E402
 from clocks.fit import fit  # noqa: E402
 from clocks.models import MODELS, limit_cycle  # noqa: E402
@@ -99,12 +100,22 @@ def noise_sd(t: np.ndarray, y: np.ndarray) -> float:
     return float(np.sqrt(resid @ resid / (len(y) - X.shape[1])))
 
 
+def chain_job(args):
+    key, data, start, steps, chain = args
+    burn = steps // 3
+    ens = sample(MODELS[key], data, start, n_steps=steps, burn=burn, thin=max(1, (steps - burn) // 250),
+                 rng=np.random.default_rng(100 + chain))
+    return key, ens.samples, predict_rhythms(ens, PERTURBATIONS), ens.acceptance
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--matrix", type=Path, default=ROOT / "data" / "GSE11923_series_matrix.txt.gz")
     ap.add_argument("--annotation", type=Path)
     ap.add_argument("--probe", nargs="+")
-    ap.add_argument("--steps", type=int, default=30000)
+    ap.add_argument("--steps", type=int, default=60000, help="per chain; the first third is burn-in")
+    ap.add_argument("--chains", type=int, default=4)
+    ap.add_argument("--workers", type=int, default=2)
     ap.add_argument("--random", type=int, default=10)
     args = ap.parse_args()
     t0 = time.time()
@@ -132,21 +143,39 @@ def main():
     design = Design("liver", "Per2 in mouse liver", "Hughes et al. (2009)",
                     (TimeCourse("mrna", tuple(t), sigma),))
     data = Data(design=design, levels=[y], rhythm=np.array([]))
-    fits, ensembles, preds = {}, {}, {}
+    fits = {}
     for key, m in MODELS.items():
         f = fit(m, data, n_random=args.random, rng=np.random.default_rng(7))
         fits[key] = f
         print(f"  {key:10s} SSE {f.sse:7.2f}  BIC {f.bic:7.2f}  period {f.period:5.2f} h  "
               f"({time.time() - t0:.0f}s)", flush=True)
-        burn = args.steps // 3
-        ens = sample(m, data, f, n_steps=args.steps, burn=burn, thin=max(1, (args.steps - burn) // 400),
-                     rng=np.random.default_rng(11))
-        ensembles[key] = ens
-        preds[key] = predict_rhythms(ens, PERTURBATIONS)
-        ess = min(effective_size(ens.samples[:, j]) for j in range(ens.samples.shape[1]))
-        ens.ess = ess
-        print(f"    ensemble: {len(ens.samples)} draws, acceptance {ens.acceptance:.2f}, smallest effective "
-              f"sample size {ess:.0f} ({time.time() - t0:.0f}s)", flush=True)
+
+    # posterior samples: several chains per model from the best fit, in parallel
+    jobs = [(key, data, fits[key], args.steps, c) for key in MODELS for c in range(args.chains)]
+    with Pool(args.workers) as pool:
+        results = pool.map(chain_job, jobs, chunksize=1)
+    ensembles, preds, diagnostics = {}, {}, {}
+    for key in MODELS:
+        runs = [r for r in results if r[0] == key]
+        samples = np.stack([r[1] for r in runs])          # (chains, draws, params)
+        P = np.stack([r[2] for r in runs])                # (chains, draws, predictions)
+        preds[key] = P.reshape(-1, P.shape[-1])
+        ensembles[key] = samples.reshape(-1, samples.shape[-1])
+        change = P[:, :, 3] - P[:, :, 0]                  # period change, protein removal x0.8
+        stopped = np.isnan(change)
+        diagnostics[key] = {
+            "chains": len(runs), "draws": int(samples.shape[0] * samples.shape[1]),
+            "acceptance": float(np.mean([r[3] for r in runs])),
+            "rhat_max": max(split_rhat(samples[:, :, j]) for j in range(samples.shape[2])),
+            "ess_min": float(min(sum(effective_size(samples[c, :, j]) for c in range(len(runs)))
+                                 for j in range(samples.shape[2]))),
+            "ess_inhibitor": float(sum(effective_size(np.where(stopped[c], 1e3, change[c]))
+                                       for c in range(len(runs)))),
+        }
+        d = diagnostics[key]
+        print(f"  {key:10s} {d['chains']} chains, {d['draws']} draws, acceptance {d['acceptance']:.2f}, "
+              f"R-hat at most {d['rhat_max']:.2f}, effective sample size {d['ess_min']:.0f} (parameters), "
+              f"{d['ess_inhibitor']:.0f} (inhibitor prediction)", flush=True)
 
     bic = pd.Series({k: f.bic for k, f in fits.items()})
     w = np.exp(-0.5 * (bic - bic.min()))
@@ -187,8 +216,7 @@ def main():
         summary[key] = {"sse": f.sse, "bic": f.bic, "k": f.k, "posterior": post[key], "period": f.period,
                         "params": {n: float(v) for n, v in f.params().items()},
                         "amplitude": limit_cycle(MODELS[key], f.theta).amplitude,
-                        "acceptance": ensembles[key].acceptance, "ess": ensembles[key].ess,
-                        "draws": len(ensembles[key].samples), "predictions": s}
+                        "sampling": diagnostics[key], "predictions": s}
     out = {"gene": GENE, "probe": probe, "probes": probes, "n": int(len(y)), "sigma": sigma,
            "ct_start": int(ct.min()), "data": {"t": t.tolist(), "y": y.tolist()}, "models": summary}
     (RESULTS / "real_data.json").write_text(json.dumps(out, indent=1))

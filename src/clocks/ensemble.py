@@ -95,6 +95,20 @@ def effective_size(x: np.ndarray) -> float:
     return float(n / max(1.0, 2 * total - 1))
 
 
+def split_rhat(chains: np.ndarray) -> float:
+    """Split R-hat (Gelman et al., Bayesian Data Analysis, 3rd ed., section 11.4) for draws shaped
+    (chains, draws): near 1 when the chains agree, above about 1.1 when they have not mixed."""
+    chains = np.asarray(chains, dtype=float)
+    half = chains.shape[1] // 2
+    parts = np.concatenate([chains[:, :half], chains[:, half:2 * half]])
+    n = parts.shape[1]
+    w = parts.var(axis=1, ddof=1).mean()
+    b = n * parts.mean(axis=1).var(ddof=1)
+    if w == 0:
+        return 1.0
+    return float(np.sqrt(((n - 1) / n * w + b / n) / w))
+
+
 def predict_rhythms(ensemble: Ensemble, perturbations: tuple[Perturbation, ...]) -> np.ndarray:
     """For each draw: the control period, then the period and log amplitude ratio under each perturbation
     (NaN where the clock stops)."""

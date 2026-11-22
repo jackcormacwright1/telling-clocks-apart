@@ -146,17 +146,20 @@ def identification_figure():
         return
     s = pd.read_csv(path)
     designs = list(DESIGNS)
-    fig, ax = plt.subplots(figsize=(8, 3.6))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 3.8), sharey=True)
     x = np.arange(len(designs))
-    for j, truth in enumerate(MODELS):
-        vals = s[s["truth"] == truth].set_index("design")["identified"].reindex(designs).to_numpy()
-        ax.bar(x + (j - 1) * 0.27, 100 * vals, width=0.25, color=COLOURS[truth], label=f"truth: {NAMES[truth]}")
-    ax.axhline(100 / 3, color=MUTED, lw=1, ls=":")
-    ax.set_ylim(0, 105)
-    ax.set_ylabel("right model chosen (%)")
-    ax.set_xticks(x, [DESIGN_NAMES[k].replace("Add ", "+ ").replace(" time course", "") for k in designs],
-                  rotation=30, ha="right")
-    ax.legend(fontsize=8, ncol=3, loc="upper left", bbox_to_anchor=(0, 1.16))
+    for ax, col, title in ((axes[0], "decisive", "Data rule out both rivals (SSE margin of 10 or more)"),
+                           (axes[1], "identified", "BIC picks the right model")):
+        for j, truth in enumerate(MODELS):
+            vals = s[s["truth"] == truth].set_index("design")[col].reindex(designs).to_numpy()
+            ax.bar(x + (j - 1) * 0.27, 100 * vals, width=0.25, color=COLOURS[truth],
+                   label=f"truth: {NAMES[truth]}")
+        ax.set_ylim(0, 105)
+        ax.set_title(title, fontsize=10, loc="left")
+        ax.set_xticks(x, [DESIGN_NAMES[k].replace("Add ", "+ ").replace(" time course", "") for k in designs],
+                      rotation=35, ha="right")
+    axes[0].set_ylabel("simulated data sets (%)")
+    axes[0].legend(fontsize=8, ncol=3, loc="upper left", bbox_to_anchor=(0, 1.22))
     save(fig, "identification.png")
 
 

@@ -30,3 +30,12 @@ def test_sampler_stays_in_bounds_and_near_the_fit():
     P = predict_rhythms(ens, PERTURBATIONS[:1])
     assert np.nanmedian(P[:, 0]) == np.nanmedian(P[:, 0])  # some draws oscillate
     assert np.all(P[~np.isnan(P[:, 1]), 1] > P[~np.isnan(P[:, 1]), 0])  # the inhibitor lengthens the delay clock
+
+
+def test_split_rhat_flags_chains_that_disagree():
+    from clocks.ensemble import split_rhat
+    rng = np.random.default_rng(4)
+    same = rng.normal(size=(4, 500))
+    apart = same + np.arange(4)[:, None] * 3.0
+    assert split_rhat(same) < 1.02
+    assert split_rhat(apart) > 1.5

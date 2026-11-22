@@ -283,18 +283,28 @@ with tabs[2]:
              "from many starting points, so Δ is what no setting of its parameters can mimic.")
 
         if ident is not None:
-            eyebrow("With noise: how often is the right model chosen?")
+            eyebrow("With noise: simulated experiments")
+            metric = st.radio("Count a data set as a success when", ["decisive", "identified"], horizontal=True,
+                              format_func={"decisive": "the data rule out both rivals",
+                                           "identified": "BIC picks the right model"}.get)
             s = ident.assign(design_name=ident["design"].map(short), truth_name=ident["truth"].map(NAMES),
-                             pct=100 * ident["identified"])
+                             pct=100 * ident[metric])
             bars = alt.Chart(s).mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3).encode(
                 x=alt.X("design_name:N", sort=order, title=None, axis=alt.Axis(labelAngle=0, labelLimit=160)),
                 xOffset=alt.XOffset("truth_name:N", sort=[NAMES[k] for k in MODELS]),
-                y=alt.Y("pct:Q", title="right model chosen (%)", scale=alt.Scale(domain=[0, 100])),
+                y=alt.Y("pct:Q", title="simulated data sets (%)", scale=alt.Scale(domain=[0, 100])),
                 color=alt.Color("truth_name:N", scale=MODEL_SCALE, legend=alt.Legend(orient="top", title="truth")),
-                tooltip=["truth_name", "design_name", alt.Tooltip("pct:Q", format=".0f"), "reps"])
+                tooltip=["truth_name", "design_name", alt.Tooltip("pct:Q", format=".0f", title="%"), "reps",
+                         alt.Tooltip("chosen:N", title="BIC chose")])
             st.altair_chart(bars.properties(height=260), use_container_width=True)
-            note(f"{int(ident['reps'].iloc[0])} simulated data sets per bar, each fitted by all three models; "
-                 "the model with the lowest BIC is chosen. A third is chance.")
+            if metric == "decisive":
+                note(f"{int(ident['reps'].iloc[0])} simulated data sets per bar, each fitted by all three models. "
+                     "Success: the true model fits better than both rivals by at least 10 in SSE (a likelihood "
+                     "ratio of about 150), so the data themselves rule the rivals out.")
+            else:
+                note("BIC also penalises parameters, so when all three models fit equally it picks the one with "
+                     "fewest: the delay chain (4), then the switch (5), then saturation (7). A high bar where the "
+                     "other measure is low is a correct guess for the wrong reason.")
 
 # ---------------------------------------------------------------- identifiability
 with tabs[3]:
