@@ -100,6 +100,18 @@ def noise_sd(t: np.ndarray, y: np.ndarray) -> float:
     return float(np.sqrt(resid @ resid / (len(y) - X.shape[1])))
 
 
+def summarise_prediction(h: pd.DataFrame) -> dict:
+    """How often the clock stops, and among the draws where it keeps going, the change in period."""
+    change = (h["period"] - h["control_period"]).dropna()
+    out = {"stops": float(h["period"].isna().mean()), "running": int(len(change))}
+    if len(change):
+        out.update({"period_change_median": float(change.median()),
+                    "period_change_90": [float(change.quantile(0.05)), float(change.quantile(0.95))],
+                    "lengthens": float((change > 0).mean()),
+                    "amplitude_ratio_median": float(np.exp(h["log_amplitude_ratio"].median()))})
+    return out
+
+
 def chain_job(args):
     key, data, start, steps, chain = args
     burn = steps // 3
@@ -205,13 +217,7 @@ def main():
         s = {}
         for p in PERTURBATIONS:
             h = g[g["perturbation"] == p.label]
-            change = (h["period"] - h["control_period"])
-            stopped = float(h["period"].isna().mean())
-            s[p.label] = {"stops": stopped,
-                          "period_change_median": float(change.median()),
-                          "period_change_90": [float(change.quantile(0.05)), float(change.quantile(0.95))],
-                          "lengthens": float((change > 0).mean()),
-                          "amplitude_ratio_median": float(np.exp(h["log_amplitude_ratio"].median()))}
+            s[p.label] = summarise_prediction(h)
         f = fits[key]
         summary[key] = {"sse": f.sse, "bic": f.bic, "k": f.k, "posterior": post[key], "period": f.period,
                         "params": {n: float(v) for n, v in f.params().items()},

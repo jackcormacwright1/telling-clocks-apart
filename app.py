@@ -409,8 +409,28 @@ with tabs[4]:
         mid = base.mark_tick(color="white", thickness=2, size=18).encode(y="mid:Q")
         zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(color=INK).encode(y="y:Q")
         st.altair_chart((bars + mid + zero).properties(height=280), width="stretch")
-        note("90% intervals over every parameter set consistent with the liver data (posterior samples), not "
-             "just the best fit.")
+        note("90% intervals over every parameter set consistent with the liver data (posterior samples), among "
+             "those where the clock keeps running.")
+        stops = {}
+        for key in MODELS:
+            preds = real["models"][key]["predictions"]
+            stops[NAMES[key]] = {f"slowed {100 * (1 - f):.0f}%": f"{100 * preds[Perturbation(inhibitor=f).label]['stops']:.0f}%"
+                                 for f in INHIBITOR_DOSES}
+            stops[NAMES[key]]["half dosage"] = f"{100 * preds[Perturbation(dosage=0.5).label]['stops']:.0f}%"
+        eyebrow("How often the clock stops")
+        st.dataframe(pd.DataFrame(stops), width="stretch")
+        callout("The real CK1δ inhibitor PF-670462 lengthens the period in proportion to the dose, by up to about 8 "
+                "hours in tissues, and only stops the clock at the highest doses (Meng et al., 2010). Of the three "
+                "models fitted to the same liver data, only the delay chain predicts that. The comparison is "
+                "qualitative: how a dose maps onto a percentage slowing is unknown.")
+        samp = {NAMES[k]: {"chains": v["sampling"]["chains"], "draws": v["sampling"]["draws"],
+                           "R-hat (worst parameter)": f"{v['sampling']['rhat_max']:.2f}",
+                           "effective draws (worst parameter)": f"{v['sampling']['ess_min']:.0f}"}
+                for k, v in real["models"].items()}
+        with st.expander("Sampling diagnostics"):
+            st.dataframe(pd.DataFrame(samp), width="stretch")
+            st.caption("R-hat near 1 means the chains agree. The saturation model's chains did not (R-hat 2.2), so "
+                       "its intervals understate how uncertain it is.")
 
 # ---------------------------------------------------------------- methodology
 with tabs[5]:

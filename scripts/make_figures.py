@@ -188,18 +188,25 @@ def real_figures():
         for i, lab in enumerate(labels):
             h = g[g["perturbation"] == lab]
             ch = (h["period"] - h["control_period"]).dropna().to_numpy()
-            if len(ch) == 0:
-                continue
+            stops = h["period"].isna().mean()
             pos = i + (j - 1) * 0.25
-            lo, mid, hi = np.percentile(ch, [5, 50, 95])
-            ax.plot([pos, pos], [lo, hi], color=COLOURS[key], lw=6, solid_capstyle="butt", alpha=0.85)
-            ax.plot([pos - 0.09, pos + 0.09], [mid, mid], color="white", lw=2)
+            if len(ch) >= 10:
+                lo, mid, hi = np.percentile(ch, [5, 50, 95])
+                ax.plot([pos, pos], [lo, hi], color=COLOURS[key], lw=6, solid_capstyle="butt", alpha=0.85)
+                ax.plot([pos - 0.09, pos + 0.09], [mid, mid], color="white", lw=2)
+                top = hi
+            else:
+                top = 0
+            ax.text(pos, top + 0.6, f"stops\n{100 * stops:.0f}%", ha="center", va="bottom", fontsize=7,
+                    color=MUTED)
         ax.plot([], [], color=COLOURS[key], lw=6, label=NAMES[key])
     ax.axhline(0, color=INK, lw=1)
     ax.set_xticks(range(len(labels)), [f"slowed {100 * (1 - f):.0f}%" for f in INHIBITOR_DOSES])
     ax.set_ylabel("change in period (hours)")
     ax.legend(fontsize=8)
-    ax.set_title("What each model, fitted to the liver data, predicts a CK1 inhibitor will do (90% intervals)",
+    ax.set_ylim(top=max(ax.get_ylim()[1], 0) + 3)
+    ax.set_title("What each model, fitted to the liver data, predicts a CK1 inhibitor will do\n(90% intervals "
+                 "among parameter sets where the clock keeps running; above: how often it stops)",
                  loc="left", fontsize=10)
     save(fig, "real_predictions.png")
 

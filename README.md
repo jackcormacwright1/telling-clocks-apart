@@ -46,7 +46,10 @@ This project asks three questions of those models:
 6. **Picking the simplest model is not evidence for it.** BIC chose the right model in 75 to 100% of simulated
    data sets even for experiments that could not tell the models apart, because the delay chain has the fewest
    parameters. The data themselves ruled out both rivals in 0% of those data sets.
-7. **Real data:** see [Real data](#real-data) below.
+7. **On real data, the same story.** All three fit two days of hourly *Per2* mRNA from mouse liver equally
+   well, yet predict three different responses to a CK1 inhibitor. Only the delay chain's prediction matches,
+   qualitatively, what the drug is known to do: lengthen the period in proportion to the dose without stopping
+   the clock.
 
 The models, methods, results and limitations are written up in [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
 
@@ -54,7 +57,29 @@ The models, methods, results and limitations are written up in [docs/METHODOLOGY
 
 ## Real data
 
-To be completed.
+Hughes et al. (2009) sampled the livers of mice in constant darkness every hour for two days. All three models
+fit the *Per2* mRNA time course equally well: their misfits are what noise alone would give. BIC prefers the
+delay chain, but only because it has the fewest parameters.
+
+![Fits to the liver data](results/real_fit.png)
+
+Sampling every parameter set consistent with those data (four chains of adaptive Metropolis per model) and
+running each under a drug that slows protein removal by 20%:
+
+| | Steep switch | Saturating removal | Long delay chain |
+|---|---:|---:|---:|
+| Clock stops | 90% of parameter sets | 43% | 0% |
+| Change in period, if it keeps running | +2.5 h (+2.0 to +3.6) | +3.0 h (−3.2 to +8.5) | +6.0 h (+5.1 to +7.1) |
+
+The real CK1δ inhibitor PF-670462 lengthens the period in a dose-dependent way, up to about 8 hours in
+tissues, and only stops the clock at the highest doses (Meng et al., 2010). That matches the delay chain. The
+switch, fitted to the liver data, sits so close to the edge of oscillation that a mild inhibitor would usually
+stop it. The comparison is qualitative, since how a drug dose maps onto "protein removal slowed by 20%" is
+unknown. The saturation model's chains did not converge (R-hat 2.2), which is itself a finding: these data
+leave its parameters, and its predictions, almost entirely open. Diagnostics and caveats are in
+[METHODOLOGY](docs/METHODOLOGY.md#real-data).
+
+![Predictions for a CK1 inhibitor](results/real_predictions.png)
 
 ## The dashboard
 
@@ -74,7 +99,7 @@ pip install -e ".[dev,app,scripts]"
 pytest                                  # tests: the models' dynamics, fitting, the sampler
 
 python scripts/tune_models.py           # base parameter sets (already in models.py)
-python scripts/run_design.py            # discrimination and Fisher information: about 20 minutes on 2 cores
+python scripts/run_design.py            # discrimination and Fisher information: about 25 minutes on 2 cores
 python scripts/run_design.py --refine   # rerun every fit from more starting points: about 20 minutes
 python scripts/run_simulation.py        # 420 noisy data sets, 1,260 fits: about 45 minutes
 python scripts/make_figures.py
@@ -83,7 +108,7 @@ python scripts/make_figures.py
 mkdir -p data
 curl -o data/GSE11923_series_matrix.txt.gz \
   https://ftp.ncbi.nlm.nih.gov/geo/series/GSE11nnn/GSE11923/matrix/GSE11923_series_matrix.txt.gz
-python scripts/fit_real_data.py         # fits and posterior chains: about 35 minutes on 2 cores
+python scripts/fit_real_data.py         # fits and posterior chains: about 45 minutes on 2 cores
 
 streamlit run app.py
 ```

@@ -231,7 +231,79 @@ model is simplest is not evidence about which mechanism the clock uses.
 
 ## Real data
 
-REAL_DATA_SECTION
+**Data.** Hughes et al. (2009) entrained male C57BL/6J mice to 12 hours of light and 12 of dark for a week,
+moved them to constant darkness, and collected livers every hour from circadian time 18 to 65: 48 arrays on the
+Affymetrix Mouse Genome 430 2.0 (GEO GSE11923). *Per2* has two probe sets on that array (MGI:1195265). One,
+1417602_at, is strongly expressed and rhythmic, with a 16-fold range. The other sits near background, so
+1417602_at is used. The series matrix holds expression on a linear scale, which is logged here.
+
+**Noise.** Measurement error is estimated from the residuals of a harmonic regression (24-, 12- and 8-hour
+components and a linear trend), which describes a smooth rhythm without assuming any of the three models. The
+residual sd is 0.36 on the natural log scale (about ±44% per sample), and is then treated as known.
+
+**Fits** ([real_fit.png](../results/real_fit.png)). Each model was fitted from its base parameters and ten
+random starts.
+
+| | Steep switch | Saturating removal | Long delay chain |
+|---|---:|---:|---:|
+| SSE (48 points) | 48.0 | 45.6 | 46.6 |
+| BIC | 75.1 | 80.4 | 69.9 |
+| BIC weight | 0.07 | < 0.01 | 0.93 |
+| Period | 23.5 h | 23.7 h | 23.6 h |
+| Hill coefficient | 23 | 3.7 | 3.1 |
+
+![Fits to the liver data](../results/real_fit.png)
+
+All three fit equally well, and all three misfits are what noise alone would give with 39 to 42 residual
+degrees of freedom. The BIC weights come entirely from the parameter penalty. By the simulation study's lesson,
+they are not evidence about the mechanism. The fitted swing is about 10-fold (2.2 to 2.3 on the log scale),
+smaller than the 47-fold base sets. The switch needs a Hill coefficient of 23 to match it.
+
+**Posterior samples.** Each model's posterior was sampled with a flat prior on the log parameters within their
+bounds (and on the phase) and the Gaussian likelihood above. Sampling used adaptive Metropolis (Haario et al.,
+2001): during burn-in the proposal follows the chain's covariance and its size is tuned towards 23% acceptance,
+then it is frozen. There were four chains of 60,000 steps per model, each started at the best fit, with the
+first 20,000 steps discarded and 250 draws kept from each. Every draw was then run under the inhibitor series and
+half dosage.
+
+Diagnostics matter here, because these posteriors are exactly the sloppy, curved shapes that make sampling hard:
+
+* **Delay chain:** split R-hat at most 1.04 and effective sample size at least 74 for every parameter. Converged.
+* **Steep switch:** R-hat up to 1.35 on some parameters, but the chains agree on the predictions (R-hat 1.03 for
+  whether the inhibitor stops the clock; effective sample size 300 for its effect on the period).
+* **Saturating removal:** R-hat 2.2. The chains did not agree: one put the chance that the inhibitor stops the
+  clock at 10%, another at 93%. Its posterior has regions the sampler could not move between, so its intervals
+  understate the uncertainty.
+
+**Predictions for a CK1 inhibitor** ([real_predictions.csv](../results/real_predictions.csv)). These are taken
+over every parameter set consistent with the liver data, not just the best fit:
+
+| Protein removal slowed by 20% | Steep switch | Saturating removal | Long delay chain |
+|---|---:|---:|---:|
+| Clock stops | 90% of draws | 43% | 0% |
+| Change in period, if it keeps running (median, 90% interval) | +2.5 h (+2.0 to +3.6) | +3.0 h (−3.2 to +8.5) | +6.0 h (+5.1 to +7.1) |
+
+![Predictions](../results/real_predictions.png)
+
+The same time course, fitted equally well, leaves the three models predicting three different things. The delay
+chain says the drug will lengthen the period, by an amount that grows with the dose (2.7, 6.0 and 10.1 hours at
+10, 20 and 30%), and never stop the clock. The switch says even a mild inhibitor will usually stop it, because
+fitted to these data it sits close to the edge of oscillation. The saturation model cannot say whether the
+period will get longer or shorter, and often says the clock will stop.
+
+**Against what is known.** The CK1δ inhibitor PF-670462 lengthens the circadian period in a dose-dependent way.
+Meng et al. (2010) found it extended the period of PER2::luciferase fibroblasts to 33 hours at 1 µM, with rhythms
+lost only at 2.5 µM and above, and lengthened the period of the brain's master clock (the SCN) and of other
+tissues by up to about 8 hours. Robust, graded lengthening without arrest is what the delay chain predicts. The
+switch, fitted to the liver data, predicts arrest under mild inhibition. This comparison is qualitative: the
+mapping from a drug concentration to "protein removal slowed by 20%" is unknown, the measurements are in other
+tissues, and a real CK1 inhibitor slows particular phosphorylation steps rather than every protein stage
+equally. But it shows the point of the project in miniature. The time course alone could not choose between
+the models, while the known response to one perturbation, which a modeller could have predicted in advance,
+favours one of them.
+
+**Half dosage** splits them too. The delay chain says a heterozygote would lose its rhythm in 47% of plausible
+parameter sets, the switch in 12% and the saturation model in 96%.
 
 ## Limitations
 
