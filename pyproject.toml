@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clocks"
+version = "0.1.0"
+description = "Telling rival models of the circadian clock apart: identifiability and experimental design"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "numba>=0.59", "pandas>=2.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+app = ["streamlit>=1.35", "altair>=5", "pyarrow>=14"]
+scripts = ["matplotlib>=3.8", "tabulate>=0.9"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
