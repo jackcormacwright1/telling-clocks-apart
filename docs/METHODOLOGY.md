@@ -228,3 +228,52 @@ cannot distinguish the models, BIC picks it because it has the fewest parameters
 the switch over saturation. Those are correct guesses for the wrong reason. Had the truth been the model with
 more parameters, the same indistinguishable data would have pointed to the wrong one. Being right about which
 model is simplest is not evidence about which mechanism the clock uses.
+
+## Real data
+
+REAL_DATA_SECTION
+
+## Limitations
+
+* **One loop, one gene.** The mammalian clock has interlocking loops (BMAL1/CLOCK, PER/CRY, REV-ERB/ROR), and the
+  liver clock is also driven by the brain's clock and by feeding. These models are the classic caricatures of
+  the core loop, useful for asking what kind of nonlinearity it needs, not descriptions of the liver.
+* **Δ is local.** It is computed at one parameter set for each truth. A different truth parameter set could make
+  a different experiment best. Bayesian or maximin designs average or guard over the truth's parameters; this
+  project guards only over which model is true.
+* **The noise levels are assumptions.** The design results scale with them: halving every error quadruples every
+  Δ. The ranking of experiments is less sensitive than the values.
+* **Perturbations are idealised.** The inhibitor multiplies the removal rate of every protein stage by the same
+  factor, and half dosage exactly halves transcription. A real drug acts on some steps more than others, and
+  heterozygous animals can compensate.
+* **Δ is found by search**, so it is an upper bound on the true minimum. Two independent passes from many starting
+  points changed most values by less than 0.2, but cannot rule out a better fit somewhere unexplored.
+* **The Fisher information is a local, linear approximation.** For directions it says are undetermined, the true
+  posterior can be bounded, curved or multimodal. The posterior sampling for the real data does not make that
+  approximation.
+* **The simulation uses 20 data sets per cell**, so each percentage has a standard error of up to 11 points.
+
+## References
+
+* Atkinson, A. C. and Fedorov, V. V. (1975). The design of experiments for discriminating between two rival
+  models. *Biometrika* 62(1), 57–70.
+* Bliss, R. D., Painter, P. R. and Marr, A. G. (1982). Role of feedback inhibition in stabilizing the classical
+  operon. *Journal of Theoretical Biology* 97, 177–193.
+* Gelman, A. et al. (2013). *Bayesian Data Analysis*, 3rd edition. CRC Press. (Split R-hat, section 11.4.)
+* Gonze, D., Bernard, S., Waltermann, C., Kramer, A. and Herzel, H. (2005). Spontaneous synchronization of coupled
+  circadian oscillators. *Biophysical Journal* 89, 120–129.
+* Gonze, D. and Ruoff, P. (2020). The Goodwin oscillator and its legacy. *Acta Biotheoretica*.
+  https://doi.org/10.1007/s10441-020-09379-8
+* Goodwin, B. C. (1965). Oscillatory behavior in enzymatic control processes. *Advances in Enzyme Regulation* 3,
+  425–438.
+* Griffith, J. S. (1968). Mathematics of cellular control processes I. Negative feedback to one gene. *Journal of
+  Theoretical Biology* 20, 202–208.
+* Gutenkunst, R. N. et al. (2007). Universally sloppy parameter sensitivities in systems biology models. *PLoS
+  Computational Biology* 3(10), e189.
+* Haario, H., Saksman, E. and Tamminen, J. (2001). An adaptive Metropolis algorithm. *Bernoulli* 7(2), 223–242.
+* Hughes, M. E. et al. (2009). Harmonics of circadian gene transcription in mammals. *PLoS Genetics* 5(4),
+  e1000442. Data: GEO GSE11923.
+* Meng, Q.-J. et al. (2010). Entrainment of disrupted circadian behavior through inhibition of casein kinase 1
+  (CK1) enzymes. *PNAS* 107(34), 15240–15245.
+* Tyson, J. J. and Othmer, H. G. (1978). The dynamics of feedback control circuits in biochemical pathways.
+  *Progress in Theoretical Biology* 5, 1–62.

@@ -415,5 +415,5 @@ with tabs[4]:
 # ---------------------------------------------------------------- methodology
 with tabs[5]:
     if METHODOLOGY_FILE.exists():
-        st.markdown(METHODOLOGY_FILE.read_text().replace("](results/", "](https://github.com/"
-                                                         "jackcormacwright1/telling-clocks-apart/blob/main/results/"))
+        st.markdown(METHODOLOGY_FILE.read_text().replace(
+            "](../results/", "](https://raw.githubusercontent.com/jackcormacwright1/telling-clocks-apart/main/results/"))
