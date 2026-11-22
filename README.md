@@ -2,6 +2,8 @@
 
 [![tests](https://github.com/jackcormacwright1/telling-clocks-apart/actions/workflows/tests.yml/badge.svg)](https://github.com/jackcormacwright1/telling-clocks-apart/actions/workflows/tests.yml)
 
+**[Open the dashboard](https://telling-clocks-apart.streamlit.app/)**
+
 The core of the circadian clock is a negative-feedback loop: PER and CRY proteins switch off their own genes.
 A loop like that only keeps oscillating if the repression is strong and late enough, and there are three
 textbook explanations of what supplies that: **very steep repression** (Goodwin, 1965; Griffith, 1968),
@@ -83,7 +85,8 @@ leave its parameters, and its predictions, almost entirely open. Diagnostics and
 
 ## The dashboard
 
-`streamlit run app.py` opens a dashboard:
+The dashboard is live at **[telling-clocks-apart.streamlit.app](https://telling-clocks-apart.streamlit.app/)**,
+or run it locally with `streamlit run app.py`:
 
 * **The models:** the three mechanisms, their rhythms, and how they respond to an inhibitor at their base
   parameters.
