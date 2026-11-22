@@ -62,6 +62,14 @@ def callout(text: str) -> None:
     st.markdown(f'<div class="callout">{text}</div>', unsafe_allow_html=True)
 
 
+def legend(items: list[tuple[str, str]]) -> None:
+    chips = "".join(f'<span style="margin-right:1.2rem;white-space:nowrap"><span style="display:inline-block;'
+                    f'width:12px;height:3px;background:{c};vertical-align:middle;margin-right:0.4rem"></span>'
+                    f'{name}</span>' for name, c in items)
+    st.markdown(f'<div style="color:{NEUTRAL};font-size:0.86rem;margin:0.1rem 0 0.2rem">{chips}</div>',
+                unsafe_allow_html=True)
+
+
 def kpi(label: str, value: str, text: str) -> str:
     return (f'<div class="kpi"><div class="label">{label}</div><div class="value">{value}</div>'
             f'<div class="note">{text}</div></div>')
@@ -151,7 +159,7 @@ with tabs[0]:
         for key, m in MODELS.items():
             st.markdown(f"<span style='color:{COLOURS[key]};font-weight:600'>■ {m.name}.</span> "
                         f"{m.description}", unsafe_allow_html=True)
-        st.markdown("Each has been tuned to a 24-hour period and the same 46-fold daily swing in mRNA. That "
+        st.markdown("Each has been tuned to a 24-hour period and the same 47-fold daily swing in mRNA. That "
                     "matching took a Hill coefficient (the steepness of repression) of 20 in the switch, 2 with "
                     "saturating removal and 3 with the delay chain.")
     with right:
@@ -162,15 +170,19 @@ with tabs[0]:
                 t, y = waveform(c, species)
                 rows += [{"hours": a, "level": b, "model": NAMES[key], "species": label} for a, b in zip(t, y)]
         df = pd.DataFrame(rows)
-        chart = alt.Chart(df).mark_line(strokeWidth=2).encode(
-            x=alt.X("hours:Q", scale=alt.Scale(domain=[0, 48]), axis=alt.Axis(values=list(range(0, 49, 12)))),
-            y=alt.Y("level:Q", title="log level (relative)"),
-            color=alt.Color("model:N", scale=MODEL_SCALE, legend=alt.Legend(orient="top", title=None)),
-            tooltip=["model", alt.Tooltip("hours:Q", format=".1f"), alt.Tooltip("level:Q", format=".2f")],
-        ).properties(height=230).facet(column=alt.Column("species:N", title=None)).resolve_scale(y="independent")
-        st.altair_chart(chart, use_container_width=True)
-        note("The mRNA rhythms differ in shape, but measured every 4 hours with 15% error, any one model can be "
-             "re-tuned to mimic the others (see Which experiment?).")
+        legend([(NAMES[k], COLOURS[k]) for k in MODELS])
+        for species in ("mRNA", "Total protein"):
+            eyebrow(species)
+            chart = alt.Chart(df[df["species"] == species]).mark_line(strokeWidth=2).encode(
+                x=alt.X("hours:Q", scale=alt.Scale(domain=[0, 48]), axis=alt.Axis(values=list(range(0, 49, 12)))),
+                y=alt.Y("level:Q", title="log level (relative)"),
+                color=alt.Color("model:N", scale=MODEL_SCALE, legend=None),
+                tooltip=["model", alt.Tooltip("hours:Q", format=".1f"), alt.Tooltip("level:Q", format=".2f")],
+            ).properties(height=210)
+            st.altair_chart(chart, width="stretch")
+        note("The mRNA rhythms differ in shape, yet measured every 4 hours with 15% error, the delay chain's can "
+             "be mimicked by a re-tuned version of either rival, and the switch's by the saturating model (see "
+             "Which experiment?).")
 
     eyebrow("Where they part company")
     rows = []
@@ -190,11 +202,11 @@ with tabs[0]:
     c1.altair_chart(a.encode(y=alt.Y("period:Q", title="period (hours)", scale=alt.Scale(zero=False)),
                              tooltip=["model", alt.Tooltip("slowed:Q", format=".0f"),
                                       alt.Tooltip("period:Q", format=".1f")]).properties(height=240),
-                    use_container_width=True)
+                    width="stretch")
     c2.altair_chart(a.encode(y=alt.Y("amplitude:Q", title="amplitude relative to control"),
                              tooltip=["model", alt.Tooltip("slowed:Q", format=".0f"),
                                       alt.Tooltip("amplitude:Q", format=".2f")]).properties(height=240),
-                    use_container_width=True)
+                    width="stretch")
     note("At these base parameters, slowing protein removal (as a CK1 inhibitor does) lengthens the period of "
          "the two linear models and shortens the saturating one. It looks like a decisive test, but it is not: "
          "re-tuned to the switch's time course, the saturating model lengthens its period by almost exactly the "
@@ -241,16 +253,19 @@ with tabs[1]:
                     t, y = waveform(c, species, 72)
                     rows += [{"hours": a, "level": b, "condition": label, "species": sl} for a, b in zip(t, y)]
             df = pd.DataFrame(rows)
-            chart = alt.Chart(df).mark_line(strokeWidth=2).encode(
-                x=alt.X("hours:Q", axis=alt.Axis(values=list(range(0, 73, 12)))),
-                y=alt.Y("level:Q", title="log level (relative)"),
-                color=alt.Color("condition:N", scale=alt.Scale(domain=["control", "perturbed"],
-                                                               range=[COLOURS[key], NEUTRAL]),
-                                legend=alt.Legend(orient="top", title=None)),
-                strokeDash=alt.StrokeDash("condition:N", scale=alt.Scale(domain=["control", "perturbed"],
-                                                                         range=[[1, 0], [5, 3]]), legend=None),
-            ).properties(height=230).facet(row=alt.Row("species:N", title=None)).resolve_scale(y="independent")
-            st.altair_chart(chart, use_container_width=True)
+            legend([("control", COLOURS[key])] + ([("perturbed (dashed)", NEUTRAL)] if pert is not None else []))
+            for species in ("mRNA", "Total protein"):
+                eyebrow(species)
+                chart = alt.Chart(df[df["species"] == species]).mark_line(strokeWidth=2).encode(
+                    x=alt.X("hours:Q", axis=alt.Axis(values=list(range(0, 73, 12)))),
+                    y=alt.Y("level:Q", title="log level (relative)"),
+                    color=alt.Color("condition:N", scale=alt.Scale(domain=["control", "perturbed"],
+                                                                   range=[COLOURS[key], NEUTRAL]),
+                                    legend=None),
+                    strokeDash=alt.StrokeDash("condition:N", scale=alt.Scale(domain=["control", "perturbed"],
+                                                                             range=[[1, 0], [5, 3]]), legend=None),
+                ).properties(height=210)
+                st.altair_chart(chart, width="stretch")
         note("The model runs live: each change integrates the equations until the oscillation settles.")
 
 # ---------------------------------------------------------------- which experiment
@@ -278,7 +293,7 @@ with tabs[2]:
         text = heat.mark_text(fontSize=12).encode(
             text="shown:N",
             color=alt.condition(alt.datum.delta > 200, alt.value("white"), alt.value(INK)))
-        st.altair_chart((rect + text).properties(height=260), use_container_width=True)
+        st.altair_chart((rect + text).properties(height=260), width="stretch")
         note("Rows: which model generated the data → which rival tried to mimic it. Each rival was refitted "
              "from many starting points, so Δ is what no setting of its parameters can mimic.")
 
@@ -296,7 +311,7 @@ with tabs[2]:
                 color=alt.Color("truth_name:N", scale=MODEL_SCALE, legend=alt.Legend(orient="top", title="truth")),
                 tooltip=["truth_name", "design_name", alt.Tooltip("pct:Q", format=".0f", title="%"), "reps",
                          alt.Tooltip("chosen:N", title="BIC chose")])
-            st.altair_chart(bars.properties(height=260), use_container_width=True)
+            st.altair_chart(bars.properties(height=260), width="stretch")
             if metric == "decisive":
                 note(f"{int(ident['reps'].iloc[0])} simulated data sets per bar, each fitted by all three models. "
                      "Success: the true model fits better than both rivals by at least 10 in SSE (a likelihood "
@@ -326,11 +341,12 @@ with tabs[3]:
         order = [short(k) for k in DESIGNS]
         ticks = alt.Chart(df).mark_tick(thickness=3, size=36, color=COLOURS[key]).encode(
             x=alt.X("design:N", sort=order, title=None, axis=alt.Axis(labelAngle=0, labelLimit=160)),
-            y=alt.Y("sd:Q", scale=alt.Scale(type="log", domain=[3e-3, 3e3]),
+            y=alt.Y("sd:Q", scale=alt.Scale(type="log", domain=[1e-3, 1e4]),
+                    axis=alt.Axis(values=[0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000], format="~g"),
                     title="sd of each parameter combination (0.1 = 10%)"),
             tooltip=["design", alt.Tooltip("sd:Q", format=".3g"), "rank"])
         rule = alt.Chart(pd.DataFrame({"y": [0.1]})).mark_rule(strokeDash=[5, 3], color=INK).encode(y="y:Q")
-        st.altair_chart((ticks + rule).properties(height=320), use_container_width=True)
+        st.altair_chart((ticks + rule).properties(height=320), width="stretch")
         note("Each tick is one combination of the model's log parameters (an eigenvector of the Fisher "
              "information). Below the dashed line it is determined to within 10%.")
         eyebrow("Precision of each parameter on its own (± %, 1 sd)")
@@ -340,7 +356,7 @@ with tabs[3]:
             tab[short(d)] = [("undetermined" if not np.isfinite(s) or s > 3 else f"± {100 * (np.exp(s) - 1):,.0f}%")
                              for s in se]
         st.dataframe(pd.DataFrame(tab, index=[f"{n}: {m.param_notes.get(n, '')}" for n in m.param_names]),
-                     use_container_width=True)
+                     width="stretch")
 
 # ---------------------------------------------------------------- real data
 with tabs[4]:
@@ -357,16 +373,17 @@ with tabs[4]:
         lines = fits.melt(id_vars="t", var_name="key", value_name="level")
         lines = lines.assign(ct=lines["t"] + t0, model=lines["key"].map(NAMES))
         chart = (alt.Chart(lines).mark_line(strokeWidth=2).encode(
-            x=alt.X("ct:Q", title="circadian time (hours)", scale=alt.Scale(domain=[t0, t0 + 48])),
+            x=alt.X("ct:Q", title="circadian time (hours)", scale=alt.Scale(domain=[t0, t0 + 47], nice=False),
+                    axis=alt.Axis(values=list(range(t0, t0 + 48, 6)))),
             y=alt.Y("level:Q", title="log expression", scale=alt.Scale(zero=False)),
             color=alt.Color("model:N", scale=MODEL_SCALE, legend=alt.Legend(orient="top", title=None)))
             + alt.Chart(pts).mark_circle(size=34, color=INK, opacity=0.9).encode(
                 x="ct:Q", y="level:Q", tooltip=[alt.Tooltip("ct:Q"), alt.Tooltip("level:Q", format=".2f")]))
-        st.altair_chart(chart.properties(height=280), use_container_width=True)
+        st.altair_chart(chart.properties(height=280), width="stretch")
         tab = pd.DataFrame({NAMES[k]: {"Misfit (SSE)": f"{v['sse']:.1f}", "BIC": f"{v['bic']:.1f}",
                                        "Posterior probability": f"{v['posterior']:.2f}",
                                        "Period": f"{v['period']:.1f} h"} for k, v in real["models"].items()})
-        st.dataframe(tab, use_container_width=True)
+        st.dataframe(tab, width="stretch")
 
         eyebrow("What each fitted model predicts for a CK1 inhibitor")
         pr = pd.read_csv(RESULTS / "real_predictions.csv")
@@ -391,7 +408,7 @@ with tabs[4]:
                      alt.Tooltip("lo:Q", format="+.1f", title="5%"), alt.Tooltip("hi:Q", format="+.1f", title="95%")])
         mid = base.mark_tick(color="white", thickness=2, size=18).encode(y="mid:Q")
         zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(color=INK).encode(y="y:Q")
-        st.altair_chart((bars + mid + zero).properties(height=280), use_container_width=True)
+        st.altair_chart((bars + mid + zero).properties(height=280), width="stretch")
         note("90% intervals over every parameter set consistent with the liver data (posterior samples), not "
              "just the best fit.")
 

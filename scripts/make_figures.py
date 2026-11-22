@@ -55,7 +55,7 @@ def models_figure():
     for ax in axes:
         ax.set_xticks(range(0, 49, 12))
     axes[0].legend(loc="lower left", fontsize=9)
-    fig.suptitle("Three mechanisms tuned to the same 24-hour, 46-fold mRNA rhythm", x=0.01, ha="left", y=1.02)
+    fig.suptitle("Three mechanisms tuned to the same 24-hour, 47-fold mRNA rhythm", x=0.01, ha="left", y=1.02)
     save(fig, "models.png")
 
 

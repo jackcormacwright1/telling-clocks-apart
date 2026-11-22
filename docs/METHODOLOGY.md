@@ -9,9 +9,10 @@ late enough. There are three textbook explanations of what supplies that:
 
 1. **Steep repression.** In Goodwin's model (1965) each stage is removed in proportion to its amount, and the
    loop only oscillates if repression is extremely cooperative: a Hill coefficient above 8 with three stages
-   (Griffith, 1968), which is far steeper than any known transcriptional repressor.
+   (Griffith, 1968), where molecular mechanisms rarely give more than 3 or 4 (Gonze and Ruoff, 2020).
 2. **Saturating removal.** If the enzymes that degrade mRNA and protein saturate, removal is no longer
-   proportional to amount, and the loop can oscillate with gentle repression (Gonze et al., 2005).
+   proportional to amount, and the loop can oscillate with gentle repression, even none (Bliss et al., 1982).
+   Gonze et al. (2005) used this version of the loop as their model of a single circadian cell.
 3. **A longer delay.** With more intermediate steps between transcription and repression (phosphorylation,
    complex formation, nuclear entry), gentle repression is enough: with seven stages, a Hill coefficient above
    about 2.1 (the secant condition; Tyson and Othmer, 1978).
@@ -48,7 +49,7 @@ delay model would come close to it too. The question is what supplies the nonlin
 steep*, so their Hill coefficients are limited to 4.
 
 **Base parameters.** Each model has a base parameter set (`scripts/tune_models.py`) with a 24-hour period
-and the same 46-fold peak-to-trough swing in mRNA (3.84 on the natural log scale). The saturation model is the
+and the same 47-fold peak-to-trough swing in mRNA (3.84 on the natural log scale). The saturation model is the
 least flexible: it keeps oscillating through every perturbation in the experiments only in a band of parameters
 where its amplitude hardly changes, so it was set by hand and the other two were tuned to match it, each by
 bisection on its gain, then rescaled in time to exactly 24 hours. Matching the swing took a Hill coefficient of

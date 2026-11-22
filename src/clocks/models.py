@@ -41,7 +41,7 @@ The three hypotheses are kept distinct by the bounds on the Hill coefficient: st
 contain the switch as a special case (removal far from saturation is linear), and so, roughly, would the
 delay model; the question here is what supplies the nonlinearity when repression is not steep.
 
-Each model's base parameters (found by scripts/tune_models.py) give a 24 h period and the same 46-fold
+Each model's base parameters (found by scripts/tune_models.py) give a 24 h period and the same 47-fold
 peak-to-trough swing in mRNA (3.84 on the log scale), and keep oscillating under every perturbation in the
 experiments. Matching the swing takes a Hill coefficient of 20 in the switch model, 2 in the saturation
 model and 3 in the delay model.
